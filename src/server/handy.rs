@@ -19,6 +19,7 @@ pub struct ServerSessionConstant {
 impl ServerSessionConstant {
     /// Insecure, do not use in production
     pub fn new(value: Vec<u8>) -> Arc<ServerSessionConstant> {
+        println!("ServerSessionConstant: created");
         Arc::new(ServerSessionConstant {
             value
         })
