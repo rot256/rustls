@@ -27,14 +27,17 @@ impl ServerSessionConstant {
 
 impl server::StoresServerSessions for ServerSessionConstant {
     fn generate(&self) -> SessionID {
+        println!("ServerSessionConstant: generate");
         SessionID::empty()
     }
 
     fn put(&self, _id: Vec<u8>, _sec: Vec<u8>) -> bool {
-        false
+        println!("ServerSessionConstant: put");
+        true
     }
 
-    fn get(&self, _id: &[u8]) -> Option<Vec<u8>> {
+    fn get(&self, id: &[u8]) -> Option<Vec<u8>> {
+        println!("ServerSessionConstant: get, {:?}", id);
         Some(self.value.clone())
     }
 }
