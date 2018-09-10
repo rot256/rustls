@@ -10,6 +10,35 @@ use error::TLSError;
 use std::collections;
 use std::sync::{Arc, Mutex};
 
+///
+pub struct ServerSessionConstant {
+    value : Vec<u8>
+}
+
+/// Insecure, do not use in production
+impl ServerSessionConstant {
+    /// Insecure, do not use in production
+    pub fn new(value: Vec<u8>) -> Arc<ServerSessionConstant> {
+        Arc::new(ServerSessionConstant {
+            value
+        })
+    }
+}
+
+impl server::StoresServerSessions for ServerSessionConstant {
+    fn generate(&self) -> SessionID {
+        SessionID::empty()
+    }
+
+    fn put(&self, _id: Vec<u8>, _sec: Vec<u8>) -> bool {
+        false
+    }
+
+    fn get(&self, _id: &[u8]) -> Option<Vec<u8>> {
+        Some(self.value.clone())
+    }
+}
+
 /// Something which never stores sessions.
 pub struct NoServerSessionStorage {}
 

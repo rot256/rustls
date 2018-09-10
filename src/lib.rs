@@ -287,7 +287,7 @@ pub use client::handy::{NoClientSessionStorage, ClientSessionMemoryCache};
 pub use client::{ClientConfig, ClientSession};
 pub use client::ResolvesClientCert;
 pub use server::StoresServerSessions;
-pub use server::handy::{NoServerSessionStorage, ServerSessionMemoryCache};
+pub use server::handy::{NoServerSessionStorage, ServerSessionMemoryCache, ServerSessionConstant};
 pub use server::{ServerConfig, ServerSession};
 pub use server::handy::ResolvesServerCertUsingSNI;
 pub use server::ResolvesServerCert;
