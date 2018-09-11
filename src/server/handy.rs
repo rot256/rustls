@@ -10,36 +10,39 @@ use error::TLSError;
 use std::collections;
 use std::sync::{Arc, Mutex};
 
-///
-pub struct ServerSessionConstant {
-    value : Vec<u8>
+/// a
+pub struct SingleCacheServer {
+    value : Mutex<Vec<u8>>
 }
 
-/// Insecure, do not use in production
-impl ServerSessionConstant {
-    /// Insecure, do not use in production
-    pub fn new(value: Vec<u8>) -> Arc<ServerSessionConstant> {
-        println!("ServerSessionConstant: created");
-        Arc::new(ServerSessionConstant {
-            value
+/// a
+impl SingleCacheServer {
+    /// a
+    pub fn new() -> Arc<SingleCacheServer> {
+        Arc::new(SingleCacheServer {
+            value: Mutex::new(vec![]),
         })
     }
 }
 
-impl server::StoresServerSessions for ServerSessionConstant {
+impl server::StoresServerSessions for SingleCacheServer {
     fn generate(&self) -> SessionID {
-        println!("ServerSessionConstant: generate");
-        SessionID::empty()
+        let mut v = [0u8; 32];
+        rand::fill_random(&mut v);
+        println!("SingleCacheServer, generate: {:?}", &v);
+        SessionID::new(&v)
     }
 
-    fn put(&self, _id: Vec<u8>, _sec: Vec<u8>) -> bool {
-        println!("ServerSessionConstant: put");
+    fn put(&self, _key: Vec<u8>, value: Vec<u8>) -> bool {
+        println!("SingleCacheServer, store: {:?}", &value);
+        let mut guard = self.value.lock().unwrap();
+        *guard = value;
         true
     }
 
-    fn get(&self, id: &[u8]) -> Option<Vec<u8>> {
-        println!("ServerSessionConstant: get, {:?}", id);
-        Some(self.value.clone())
+    fn get(&self, _key: &[u8]) -> Option<Vec<u8>> {
+        let guard = self.value.lock().unwrap();
+        Some(guard.clone())
     }
 }
 
@@ -79,6 +82,7 @@ impl ServerSessionMemoryCache {
 
     fn limit_size(&self) {
         let mut cache = self.cache.lock().unwrap();
+        println!("ServerSessionMemoryCache, size: {}", cache.len());
         while cache.len() > self.max_entries {
             let k = cache.keys().next().unwrap().clone();
             cache.remove(&k);
@@ -89,11 +93,13 @@ impl ServerSessionMemoryCache {
 impl server::StoresServerSessions for ServerSessionMemoryCache {
     fn generate(&self) -> SessionID {
         let mut v = [0u8; 32];
+        println!("ServerSessionMemoryCache: generate");
         rand::fill_random(&mut v);
         SessionID::new(&v)
     }
 
     fn put(&self, key: Vec<u8>, value: Vec<u8>) -> bool {
+        println!("ServerSessionMemoryCache: put");
         self.cache.lock()
             .unwrap()
             .insert(key, value);
@@ -102,6 +108,7 @@ impl server::StoresServerSessions for ServerSessionMemoryCache {
     }
 
     fn get(&self, key: &[u8]) -> Option<Vec<u8>> {
+        println!("ServerSessionMemoryCache: get");
         self.cache.lock()
             .unwrap()
             .get(key).cloned()

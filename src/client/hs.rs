@@ -102,11 +102,14 @@ fn find_session(sess: &mut ClientSessionImpl, dns_name: webpki::DNSNameRef)
     let value = maybe_value.unwrap();
     if let Some(result) = persist::ClientSessionValue::read_bytes(&value) {
         if result.has_expired(ticketer::timebase()) {
+            println!("client: session expired");
             None
         } else {
+            println!("client: session okay");
             Some(result)
         }
     } else {
+        println!("client: session error");
         None
     }
 }
@@ -319,6 +322,7 @@ fn emit_client_hello_for_retry(sess: &mut ClientSessionImpl,
     }
 
     if support_tls13 && sess.config.enable_tickets {
+        println!("psk_mode enabled");
         // We could support PSK_KE here too. Such connections don't
         // have forward secrecy, and are similar to TLS1.2 resumption.
         let psk_modes = vec![ PSKKeyExchangeMode::PSK_DHE_KE ];

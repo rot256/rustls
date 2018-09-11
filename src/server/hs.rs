@@ -204,6 +204,9 @@ impl ExpectClientHello {
                           hello: &ClientHelloPayload,
                           for_resume: bool)
                           -> Result<Vec<ServerExtension>, TLSError> {
+
+        println!("fn process_extensions, for_resume: {}", for_resume);
+
         let mut ret = Vec::new();
 
         // ALPN
@@ -327,6 +330,8 @@ impl ExpectClientHello {
                                resuming_psk: Option<Vec<u8>>)
                                -> Result<(), TLSError> {
         let mut extensions = Vec::new();
+
+        println!("resuming_psk: {:?}", resuming_psk);
 
         // Do key exchange
         let kxr = suites::KeyExchange::start_ecdhe(share.group)
@@ -618,6 +623,9 @@ impl ExpectClientHello {
                          hello: &ClientHelloPayload,
                          for_resume: bool)
                          -> Result<(), TLSError> {
+
+        println!("fn emit_server_hello, for_resume: {}", for_resume);
+
         let extensions = self.process_extensions(sess, server_key, hello, for_resume)?;
 
         let sh = Message {
@@ -777,7 +785,8 @@ impl ExpectClientHello {
                         id: &SessionID,
                         resumedata: persist::ServerSessionValue)
                         -> NextStateOrError {
-        debug!("Resuming session");
+
+        println!("fn start_resumption");
 
         if resumedata.extended_ms && !self.handshake.using_ems {
             return Err(illegal_param(sess, "refusing to resume without ems"));
@@ -813,6 +822,8 @@ impl ExpectClientHello {
                                  mut server_key: sign::CertifiedKey,
                                  chm: &Message)
                                  -> NextStateOrError {
+        println!("fn: handle_client_hello_tls13");
+
         let client_hello = extract_handshake!(chm, HandshakePayload::ClientHello).unwrap();
 
         if client_hello.compression_methods.len() != 1 {
@@ -867,6 +878,8 @@ impl ExpectClientHello {
             .find(|share| share.group == chosen_group)
             .unwrap();
 
+        println!("fn: handle_client_hello_tls13, ok");
+
         let mut chosen_psk_index = None;
         let mut resuming_psk = None;
         if let Some(psk_offer) = client_hello.get_psk() {
@@ -915,6 +928,9 @@ impl ExpectClientHello {
         }
 
         let full_handshake = resuming_psk.is_none();
+
+        println!("full_handshake: {}", full_handshake);
+
         self.handshake.transcript.add_message(chm);
         self.emit_server_hello_tls13(sess, &client_hello.session_id,
                                      chosen_share, chosen_psk_index, resuming_psk)?;

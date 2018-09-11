@@ -1011,7 +1011,13 @@ impl ClientHelloPayload {
     }
 
     pub fn get_psk(&self) -> Option<&PresharedKeyOffer> {
+
+        println!("fn get_psk");
+
         let ext = self.find_extension(ExtensionType::PreSharedKey)?;
+
+        println!("get_psk, ext: {:?}", ext);
+
         match *ext {
             ClientExtension::PresharedKey(ref psk) => Some(psk),
             _ => None,
